@@ -39,7 +39,8 @@ export class DashboardComponent {
    * Use the BehaviourSubject here, use pipe operator to chain and use a concatMap to wait for the previous
    * observable to complete to have the data, and then starting with the next observable to search for results.
    *
-   * Another approach might also be using combineLatest here.
+   * Note: However, there is an issue that the observable is triggered twice at the moment and thus, the request is sent twice.
+   * This can be figured out with a bit more time.
    **/
   search$: Observable<IFhirSearchResponse<IFhirPatient | IFhirPractitioner>> =
       this._filterObject$.pipe(
@@ -67,8 +68,8 @@ export class DashboardComponent {
     startWith(0),
   );
 
-  // Fixed the issue that an abstract class can not be injected here. Instead, I am using the actual implementation of the
-  // SearchFacadeService here. Also, I added the service as provider in the Dashboard module.
+  // Fixed the issue that an abstract class can not be injected. Instead, I am using the actual implementation of the
+  // SearchFacadeService here. Also, I added the service as provider in the dashboard.module.
   constructor(private siteTitleService: SiteTitleService, private searchFacade: SearchFacadeService) {
     this.siteTitleService.setSiteTitle('Dashboard');
   }
