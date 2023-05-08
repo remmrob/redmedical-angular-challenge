@@ -1,10 +1,10 @@
-import { Component } from '@angular/core';
+import {Component} from '@angular/core';
 import {BehaviorSubject, Observable, of} from 'rxjs';
-import { catchError, map, shareReplay, startWith, tap } from 'rxjs/operators';
-import { SiteTitleService } from '@red-probeaufgabe/core';
-import { FhirSearchFn, IFhirPatient, IFhirPractitioner, IFhirSearchResponse } from '@red-probeaufgabe/types';
-import { IUnicornTableColumn } from '@red-probeaufgabe/ui';
-import {AbstractSearchFacadeService, SearchFacadeService} from '@red-probeaufgabe/search';
+import {catchError, concatMap, map, shareReplay, startWith, tap} from 'rxjs/operators';
+import {SiteTitleService} from '@red-probeaufgabe/core';
+import {FhirSearchFn, IFhirPatient, IFhirPractitioner, IFhirSearchResponse} from '@red-probeaufgabe/types';
+import {FilterObject, IUnicornTableColumn} from '@red-probeaufgabe/ui';
+import {SearchFacadeService} from '@red-probeaufgabe/search';
 
 @Component({
   selector: 'app-dashboard',
@@ -12,6 +12,18 @@ import {AbstractSearchFacadeService, SearchFacadeService} from '@red-probeaufgab
   styleUrls: ['./dashboard.component.scss'],
 })
 export class DashboardComponent {
+
+  /**
+   * Use the filterObject as a BehaviourObject here, to be able to trigger the observable for searching
+   * when the value of the filter changes. This works because everytime the value of the subjects changes, it will emit its
+   * value to its subscribers.
+   * @private
+   */
+  private _filterObject$: BehaviorSubject<FilterObject> = new BehaviorSubject<FilterObject>({
+    searchString: '',
+    filter: FhirSearchFn.SearchAll,
+  })
+
   // Init unicorn columns to display
   columns: Set<IUnicornTableColumn> = new Set<IUnicornTableColumn>([
     'number',
@@ -20,20 +32,30 @@ export class DashboardComponent {
     'gender',
     'birthDate',
   ]);
+
   isLoading = true;
 
   /*
-   * Implement search on keyword or fhirSearchFn change
+   * Use the BehaviourSubject here, use pipe operator to chain and use a concatMap to wait for the previous
+   * observable to complete to have the data, and then starting with the next observable to search for results.
+   *
+   * Another approach might also be using combineLatest here.
    **/
-  search$: Observable<IFhirSearchResponse<IFhirPatient | IFhirPractitioner>> = this.searchFacade
-    .search(FhirSearchFn.SearchAll, '')
-    .pipe(
-      catchError(this.handleError),
-      tap(() => {
-        this.isLoading = false;
-      }),
-      shareReplay(),
-    );
+  search$: Observable<IFhirSearchResponse<IFhirPatient | IFhirPractitioner>> =
+      this._filterObject$.pipe(
+          concatMap((filterObjectValue: FilterObject) => {
+              return this.searchFacade
+                  .search(filterObjectValue.filter, filterObjectValue.searchString)
+                  .pipe(
+                      catchError(this.handleError),
+                      tap(() => {
+                          this.isLoading = false;
+                      }),
+                      shareReplay(),
+                  );
+          })
+      )
+
 
   entries$: Observable<Array<IFhirPatient | IFhirPractitioner>> = this.search$.pipe(
     map((data) => !!data && data.entry),
@@ -49,6 +71,15 @@ export class DashboardComponent {
   // SearchFacadeService here. Also, I added the service as provider in the Dashboard module.
   constructor(private siteTitleService: SiteTitleService, private searchFacade: SearchFacadeService) {
     this.siteTitleService.setSiteTitle('Dashboard');
+  }
+
+  /**
+   * This method is executed whenever the event from the child class is emitted. It gets the new filterObject value, updates the
+   * behaviour subject and therefor the search request is made
+   * @param filterObject
+   */
+  public changeFilterEvent(filterObject: FilterObject) {
+    this._filterObject$.next(filterObject);
   }
 
   private handleError(): Observable<IFhirSearchResponse<IFhirPatient | IFhirPractitioner>> {

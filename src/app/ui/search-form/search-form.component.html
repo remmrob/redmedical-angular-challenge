@@ -1,1 +1,13 @@
-<!-- implement search form here -->
+<div class="container">
+    <mat-form-field appearance="outline">
+        <mat-label>Search by name</mat-label>
+        <input matInput placeholder="Name" [formControl]="searchQueryForm" (change)="changeSearchQuery()">
+        <mat-error *ngIf="searchQueryForm.invalid">{{getErrorMessage()}}</mat-error>
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+        <mat-label>Select a filter</mat-label>
+        <mat-select class="select-input" [formControl]="filterForm" (valueChange)="changeFilter($event)">
+            <mat-option *ngFor="let filter of listOfFilterOptions" [value]="filter.key">{{filter.value}}</mat-option>
+        </mat-select>
+    </mat-form-field>
+</div>
