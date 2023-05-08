@@ -1,0 +1,45 @@
+<mat-card class="container-card">
+    <mat-card-header>
+        <div mat-card-avatar class="header-image"></div>
+        <mat-card-title>{{preparedFhirData.name}}</mat-card-title>
+        <mat-card-subtitle>{{preparedFhirData.resourceType}}</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+        <div>
+            <h2>ID</h2>
+            {{preparedFhirData.id}}
+            <mat-divider></mat-divider>
+        </div>
+        <!-- This part is shown when a Patient was selected -->
+        <div *ngIf="isPatient()">
+            <div *ngIf="preparedFhirData.birthDate">
+                <h2>Birthday</h2>
+                {{preparedFhirData.birthDate}}
+                <mat-divider></mat-divider>
+            </div>
+            <div *ngIf="preparedFhirData.gender">
+                <h2>Gender</h2>
+                {{preparedFhirData.gender}}
+                <mat-divider></mat-divider>
+            </div>
+            <div *ngIf="preparedFhirData.address">
+                <h2>Address</h2>
+                {{preparedFhirData.address}}
+                <mat-divider></mat-divider>
+            </div>
+        </div>
+        <!-- This part is shown when a Practitioner was selected -->
+        <div *ngIf="!isPatient()">
+            <div *ngIf="preparedFhirData.telecom">
+                <div *ngFor="let contact of preparedFhirData.telecom">
+                    <h2>{{contact.system}} ({{contact.use}})</h2>
+                    {{contact.value}}
+                    <mat-divider></mat-divider>
+                </div>
+            </div>
+        </div>
+    </mat-card-content>
+    <mat-card-actions class="buttons">
+        <button mat-button mat-dialog-close>Close</button>
+    </mat-card-actions>
+</mat-card>

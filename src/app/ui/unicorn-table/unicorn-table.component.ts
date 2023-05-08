@@ -3,6 +3,8 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
 import { IUnicornTableColumn } from '../models';
 import { IFhirPatient, IFhirPractitioner } from '@red-probeaufgabe/types';
+import {MatDialog} from "@angular/material/dialog";
+import {UnicornTableDetailComponent} from "../unicorn-table-detail/unicorn-table-detail.component";
 
 @Component({
   selector: 'app-unicorn-table',
@@ -22,7 +24,24 @@ export class UnicornTableComponent implements OnInit {
     this.dataSource.data = value;
   }
 
+  /**
+   * Use a constructor here to inject MatDialog
+   * @param dialog
+   */
+  constructor(public dialog: MatDialog) {
+  }
+
   ngOnInit() {
     this.dataSource.paginator = this.paginator;
+  }
+
+  /**
+   * Opens a panel in a dialog with detailed information about the selected Patient or Practitioner
+   * @param selectedRow
+   */
+  public openDetailPanel(selectedRow: IFhirPatient | IFhirPractitioner) {
+    this.dialog.open(UnicornTableDetailComponent, {
+      data: selectedRow,
+    });
   }
 }

@@ -24,6 +24,8 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatRippleModule } from '@angular/material/core';
 import { DialogDetailRowComponent } from './dialog-detail-row/dialog-detail-row.component';
 import { SearchFormComponent } from './search-form/search-form.component';
+import { UnicornTableDetailComponent } from './unicorn-table-detail/unicorn-table-detail.component';
+import {FhirUtilService} from "@red-probeaufgabe/search";
 
 @NgModule({
   imports: [
@@ -44,6 +46,7 @@ import { SearchFormComponent } from './search-form/search-form.component';
     MatCardModule,
     MatSelectModule,
     MatRippleModule,
+    MatDialogModule
   ],
   declarations: [
     SidenavComponent,
@@ -53,6 +56,7 @@ import { SearchFormComponent } from './search-form/search-form.component';
     UnicornTableComponent,
     DialogDetailRowComponent,
     SearchFormComponent,
+    UnicornTableDetailComponent,
   ],
   exports: [
     // Components
@@ -74,5 +78,6 @@ import { SearchFormComponent } from './search-form/search-form.component';
     MatRippleModule,
     MatIconModule,
   ],
+  providers:[FhirUtilService]
 })
 export class UiModule {}
